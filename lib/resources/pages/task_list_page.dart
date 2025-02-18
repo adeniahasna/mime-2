@@ -86,6 +86,20 @@ class _TaskListPageState extends NyPage<TaskListPage> {
     );
   }
 
+  void addTask(Task newTask) {
+    for (DateTime date = newTask.startDate;
+        !date.isAfter(newTask.endDate);
+        date = date.add(Duration(days: 1))) {
+      String key = DateFormat('yyyy-MM-dd').format(date);
+      if (!tasks.containsKey(key)) {
+        tasks[key] = [];
+      }
+      tasks[key]!.add(newTask);
+    }
+    _saveTasks();
+    setState(() {});
+  }
+
   void _changeMonth(int offset) {
     setState(() {
       currentMonth =
@@ -112,19 +126,35 @@ class _TaskListPageState extends NyPage<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: SizedBox(
-                  height: 18,
-                  child: Image.asset(AssetImages.logo),
+        automaticallyImplyLeading: false,
+        title: Column(
+          children: [
+            SizedBox(height: 30),
+            Stack(
+              children: [
+                Center(
+                  child: Image.asset(
+                    AssetImages.logo,
+                    height: 18,
+                  ),
                 ),
-              ),
-            ],
-          ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: InkWell(
+                      onTap: () {},
+                      child: Image.asset(
+                        AssetImages.profileOn,
+                        width: 22,
+                        height: 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
       body: Stack(
@@ -156,6 +186,7 @@ class _TaskListPageState extends NyPage<TaskListPage> {
               ),
               SizedBox(height: 5),
               buildStatusFilter(),
+              SizedBox(height: 10),
               Expanded(child: _buildTaskList()),
             ],
           ),
@@ -373,7 +404,7 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(task.status).withAlpha(2),
+                    color: _getStatusColor(task.status).withAlpha(50),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -388,7 +419,7 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: _getPriorityColor(task.priority).withAlpha(2),
+                    color: _getPriorityColor(task.priority).withAlpha(50),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -447,9 +478,9 @@ class _TaskListPageState extends NyPage<TaskListPage> {
       case 'Open':
         return Colors.blue;
       case 'In Progress':
-        return Colors.orange;
-      case 'Done':
         return Colors.green;
+      case 'Done':
+        return Colors.grey;
       default:
         return Colors.grey;
     }
@@ -478,9 +509,9 @@ class _TaskListPageState extends NyPage<TaskListPage> {
             width: double.minPositive,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: statuses.length - 1, // Exclude "All"
+              itemCount: statuses.length - 1,
               itemBuilder: (BuildContext context, int index) {
-                final status = statuses[index + 1]; // Skip "All"
+                final status = statuses[index + 1];
                 return ListTile(
                   title: Text(status),
                   onTap: () {

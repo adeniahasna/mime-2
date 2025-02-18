@@ -27,20 +27,6 @@ class _BottomNavBarPageState extends NyPage<BottomNavBarPage> {
   Map<String, List<Task>> tasks = {};
   int currentIndex = 0;
 
-  void _addTaskToList(Task task) {
-    for (DateTime date = task.startDate;
-        !date.isAfter(task.endDate);
-        date = date.add(Duration(days: 1))) {
-      String key = DateFormat('yyyy-MM-dd').format(date);
-      if (!tasks.containsKey(key)) {
-        tasks[key] = [];
-      }
-      tasks[key]!.add(task);
-    }
-    _saveTasks();
-    setState(() {});
-  }
-
   void _handleNavigation(int index) {
     setState(() {
       currentIndex = index;
@@ -74,6 +60,20 @@ class _BottomNavBarPageState extends NyPage<BottomNavBarPage> {
     _loadTasks();
   }
 
+  void _addTaskToList(Task task) {
+    for (DateTime date = task.startDate;
+        !date.isAfter(task.endDate);
+        date = date.add(Duration(days: 1))) {
+      String key = DateFormat('yyyy-MM-dd').format(date);
+      if (!tasks.containsKey(key)) {
+        tasks[key] = [];
+      }
+      tasks[key]!.add(task);
+    }
+    _saveTasks();
+    setState(() {});
+  }
+
   Future<void> _loadTasks() async {
     try {
       String? storedTasks = await NyStorage.read('tasks');
@@ -104,6 +104,19 @@ class _BottomNavBarPageState extends NyPage<BottomNavBarPage> {
       await NyStorage.save('tasks', jsonEncode(tasksForStorage));
     } catch (e) {
       print("Error saving tasks: $e");
+    }
+  }
+
+  Future<void> _navigateToAddTask() async {
+    Task? newTask = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddTaskPage(initialDate: selectedDate),
+      ),
+    );
+
+    if (newTask != null) {
+      _addTaskToList(newTask);
     }
   }
 
@@ -153,19 +166,6 @@ class _BottomNavBarPageState extends NyPage<BottomNavBarPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _navigateToAddTask() async {
-    Task? newTask = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddTaskPage(initialDate: selectedDate),
-      ),
-    );
-
-    if (newTask != null) {
-      _addTaskToList(newTask);
-    }
   }
 
   Widget buildNavBarItem(int index) {

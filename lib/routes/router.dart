@@ -42,9 +42,9 @@ appRouter() => nyRoutes((router) {
       // });
       router.add(NotFoundPage.path).unknownRoute();
       router.add(DashboardPage.path);
-      router.add(BottomNavBarPage.path);
+      router.add(BottomNavBarPage.path).initialRoute();
       router.add(ProfilePage.path);
-      router.add(SignInPage.path).initialRoute();
+      router.add(SignInPage.path);
       router.add(SignUpPage.path);
       router.add(TaskListPage.path);
       router.add(EditTaskPage.path);

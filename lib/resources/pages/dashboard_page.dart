@@ -40,7 +40,9 @@ class _DashboardPageState extends NyPage<DashboardPage> {
                   (taskMap) => Task.fromMap(Map<String, dynamic>.from(taskMap)))
               .toList();
         });
-        setState(() {});
+        setState(() {
+          todayTasks = tasks[todayKey] ?? [];
+        });
       }
     } catch (e) {
       print("Error loading tasks: $e");
@@ -52,19 +54,34 @@ class _DashboardPageState extends NyPage<DashboardPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: SizedBox(
-                  height: 18,
-                  child: Image.asset(AssetImages.logo),
+        title: Column(
+          children: [
+            SizedBox(height: 30),
+            Stack(
+              children: [
+                Center(
+                  child: Image.asset(
+                    AssetImages.logo,
+                    height: 18,
+                  ),
                 ),
-              ),
-            ],
-          ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: InkWell(
+                      onTap: () {},
+                      child: Image.asset(
+                        AssetImages.profileOn,
+                        width: 22,
+                        height: 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
       body: SafeArea(
@@ -83,56 +100,22 @@ class _DashboardPageState extends NyPage<DashboardPage> {
                 children: [
                   Column(
                     children: [
-                      SizedBox(height: 40),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 27),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Color(0xFF4413D2),
-                            borderRadius: BorderRadius.circular(30),
-                            image: DecorationImage(
-                              image: AssetImage(AssetImages.circle1),
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                          height: 170,
+                      startCard(),
+                      SizedBox(height: 25),
+                      Align(
+                        alignment: Alignment(-0.8, 0),
+                        child: Text(
+                          "Today Task",
+                          style: GoogleFonts.anekDevanagari(
+                              fontSize: 22, fontWeight: FontWeight.w600),
                         ),
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.2,
+                        child: buildTodayList(),
                       ),
                     ],
                   ),
-                  Positioned(
-                    left: 50,
-                    top: 65,
-                    child: Text(
-                      "You have task to complete. \n Let's get started!",
-                      style: GoogleFonts.anekDevanagari(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                  Positioned(
-                    left: 50,
-                    top: 140,
-                    child: MaterialButton(
-                      onPressed: () {
-                        BottomNavBarPage.navigateToPage(context, 1);
-                      },
-                      color: Colors.white,
-                      textColor: Color(0xFF4413D2),
-                      padding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 23),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        "View Task",
-                        style: GoogleFonts.anekDevanagari(
-                            fontSize: 19, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                  Expanded(child: _buildTodaySection(todayTasks)),
                 ],
               ),
             ),
@@ -142,110 +125,194 @@ class _DashboardPageState extends NyPage<DashboardPage> {
     );
   }
 
-  Widget _buildTodaySection(List<Task> todayTasks) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget startCard() {
+    return Stack(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
-            "Today Task",
-            style: GoogleFonts.anekDevanagari(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-        todayTasks.isEmpty
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: Text(
-                    "You don't have task today",
-                    style: GoogleFonts.anekDevanagari(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+        Column(
+          children: [
+            SizedBox(height: 40),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 27),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFF4413D2),
+                  borderRadius: BorderRadius.circular(30),
+                  image: DecorationImage(
+                    image: AssetImage(AssetImages.circle1),
+                    fit: BoxFit.fill,
                   ),
                 ),
-              )
-            : _buildHorizontalScroll(todayTasks),
-      ],
-    );
-  }
-
-  Widget _buildTaskSection(String title, List<Task> taskList) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                height: 170,
+              ),
+            ),
+          ],
+        ),
+        Positioned(
+          left: 50,
+          top: 65,
           child: Text(
-            title,
+            "You have task to complete. \n Let's get started!",
             style: GoogleFonts.anekDevanagari(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+        ),
+        Positioned(
+          left: 50,
+          top: 140,
+          child: MaterialButton(
+            onPressed: () {
+              BottomNavBarPage.navigateToPage(context, 1);
+            },
+            color: Colors.white,
+            textColor: Color(0xFF4413D2),
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 23),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              "View Task",
+              style: GoogleFonts.anekDevanagari(
+                  fontSize: 19, fontWeight: FontWeight.w600),
             ),
           ),
         ),
-        _buildHorizontalScroll(taskList),
       ],
     );
   }
 
-  Widget _buildHorizontalScroll(List<Task> taskList) {
-    return SizedBox(
-      height: 120, // Sesuaikan tinggi item
+  Widget buildTodayList() {
+    List<Task> taskList = todayTasks;
+
+    if (taskList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_note, size: 50, color: Colors.grey),
+            SizedBox(height: 10),
+            Text("No tasks for this day",
+                style: GoogleFonts.anekDevanagari(
+                  fontSize: 16,
+                  color: Colors.grey,
+                )),
+          ],
+        ),
+      );
+    }
+
+    // Calculate the grid item size to make it a square
+    double gridSize = 180; // Size for each square task card
+
+    return Container(
+      padding: EdgeInsets.all(16),
+      height: 220, // Height that accommodates the grid size plus padding
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: taskList.length,
         itemBuilder: (context, index) {
-          return _buildTaskCard(taskList[index]);
+          Task task = taskList[index];
+          print(
+              'Task: ${task.name}, Priority: ${task.priority}'); // Debug print
+          return Container(
+            width: gridSize,
+            height: gridSize,
+            margin: EdgeInsets.only(right: 12),
+            child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.name,
+                      style: GoogleFonts.anekDevanagari(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "${task.startTime.format(context)} - ${task.endTime.format(context)}",
+                      style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                    ),
+                    SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(task.status).withAlpha(30),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            task.status,
+                            style: TextStyle(
+                              color: _getStatusColor(task.status),
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color:
+                                _getPriorityColor(task.priority).withAlpha(30),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            task.priority,
+                            style: TextStyle(
+                              color: _getPriorityColor(task.priority),
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Spacer(),
+                  ],
+                ),
+              ),
+            ),
+          );
         },
       ),
     );
   }
 
-  Widget _buildTaskCard(Task task) {
-    return Container(
-      width: 200, // Lebar kotak task
-      margin: EdgeInsets.symmetric(horizontal: 8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            task.name,
-            style: GoogleFonts.anekDevanagari(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            task.description,
-            style: GoogleFonts.anekDevanagari(
-              fontSize: 14,
-              color: Colors.black54,
-            ),
-          ),
-        ],
-      ),
-    );
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Open':
+        return Colors.blue;
+      case 'In Progress':
+        return Colors.orange;
+      case 'Done':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getPriorityColor(String priority) {
+    switch (priority) {
+      case 'Low':
+        return Colors.green;
+      case 'Medium':
+        return Colors.orange;
+      case 'High':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 }

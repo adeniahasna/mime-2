@@ -34,6 +34,15 @@ class Boot {
   }
 }
 
+class BottomNavState extends ChangeNotifier {
+  int currentIndex = 0;
+
+  void setIndex(int index) {
+    currentIndex = index;
+    notifyListeners();
+  }
+}
+
 /* Setup
 |--------------------------------------------------------------------------
 | You can use _setup to initialize classes, variables, etc.
