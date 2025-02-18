@@ -44,10 +44,10 @@ appRouter() => nyRoutes((router) {
       router.add(DashboardPage.path);
       router.add(BottomNavBarPage.path);
       router.add(ProfilePage.path);
-      router.add(SignInPage.path, transition: PageTransitionType.fade);
       router
-          .add(SignUpPage.path, transition: PageTransitionType.fade)
+          .add(SignInPage.path, transition: PageTransitionType.fade)
           .initialRoute();
+      router.add(SignUpPage.path, transition: PageTransitionType.fade);
       router.add(TaskListPage.path, transition: PageTransitionType.leftToRight);
       router.add(EditTaskPage.path);
       router.add(AddTaskPage.path, transition: PageTransitionType.bottomToTop);

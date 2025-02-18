@@ -1,10 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/config/assets_image.dart';
 import 'package:flutter_app/config/task.dart';
+import 'package:flutter_app/resources/pages/profile_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nylo_framework/nylo_framework.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
 
 class TaskListPage extends NyStatefulWidget {
   static RouteView path = ("/task-list", (_) => TaskListPage());
@@ -30,36 +32,36 @@ class _TaskListPageState extends NyPage<TaskListPage> {
   }
 
   Future<void> _loadTasks() async {
-    try {
-      String? storedTasks = await NyStorage.read('tasks');
-      if (storedTasks != null) {
-        Map<String, dynamic> tasksMap = jsonDecode(storedTasks);
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print("User not logged in!");
+      return;
+    }
 
-        tasksMap.forEach((date, tasksList) {
-          List<dynamic> tasksForDate = tasksList;
-          tasks[date] = tasksForDate
-              .map(
-                  (taskMap) => Task.fromMap(Map<String, dynamic>.from(taskMap)))
-              .toList();
-        });
-        setState(() {});
+    FirebaseFirestore.instance
+        .collection("tasks")
+        .doc(user.uid)
+        .collection("userTasks")
+        .where('deleted', isEqualTo: false)
+        .snapshots()
+        .listen((snapshot) {
+      Map<String, List<Task>> loadedTasks = {};
+      for (var doc in snapshot.docs) {
+        Task task = Task.fromMap(doc.data());
+        for (DateTime date = task.startDate;
+            !date.isAfter(task.endDate);
+            date = date.add(Duration(days: 1))) {
+          String key = DateFormat('yyyy-MM-dd').format(date);
+          if (!loadedTasks.containsKey(key)) {
+            loadedTasks[key] = [];
+          }
+          loadedTasks[key]!.add(task);
+        }
       }
-    } catch (e) {
-      print("Error loading tasks: $e");
-    }
-  }
-
-  Future<void> _saveTasks() async {
-    try {
-      Map<String, List<Map<String, dynamic>>> tasksForStorage = {};
-      tasks.forEach((date, tasksList) {
-        tasksForStorage[date] = tasksList.map((task) => task.toMap()).toList();
+      setState(() {
+        tasks = loadedTasks;
       });
-
-      await NyStorage.save('tasks', jsonEncode(tasksForStorage));
-    } catch (e) {
-      print("Error saving tasks: $e");
-    }
+    });
   }
 
   void scrollToDate() {
@@ -84,20 +86,6 @@ class _TaskListPageState extends NyPage<TaskListPage> {
       duration: Duration(milliseconds: 700),
       curve: Curves.easeInOut,
     );
-  }
-
-  void addTask(Task newTask) {
-    for (DateTime date = newTask.startDate;
-        !date.isAfter(newTask.endDate);
-        date = date.add(Duration(days: 1))) {
-      String key = DateFormat('yyyy-MM-dd').format(date);
-      if (!tasks.containsKey(key)) {
-        tasks[key] = [];
-      }
-      tasks[key]!.add(newTask);
-    }
-    _saveTasks();
-    setState(() {});
   }
 
   void _changeMonth(int offset) {
@@ -143,7 +131,12 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                   child: Padding(
                     padding: EdgeInsets.only(left: 10),
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          ProfilePage.path.name,
+                        );
+                      },
                       child: Image.asset(
                         AssetImages.profileOn,
                         width: 22,
@@ -437,7 +430,7 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                 if (value == 'change_status') {
                   _showChangeStatusDialog(task);
                 } else if (value == 'delete_task') {
-                  _deleteTask(task);
+                  _showDeleteConfirmDialog(task);
                 }
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -520,9 +513,9 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                 final status = statuses[index + 1];
                 return ListTile(
                   title: Text(status),
-                  onTap: () {
+                  onTap: () async {
                     task.status = status;
-                    _saveTasks();
+                    await _updateTaskInFirestore(task);
                     setState(() {});
                     Navigator.pop(context);
                   },
@@ -535,18 +528,102 @@ class _TaskListPageState extends NyPage<TaskListPage> {
     );
   }
 
-  void _deleteTask(Task task) {
-    setState(() {
-      for (DateTime date = task.startDate;
-          !date.isAfter(task.endDate);
-          date = date.add(Duration(days: 1))) {
-        String key = DateFormat('yyyy-MM-dd').format(date);
-        tasks[key]?.remove(task);
-        if (tasks[key]?.isEmpty ?? false) {
-          tasks.remove(key);
-        }
+  void _showDeleteConfirmDialog(Task task) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Delete"),
+          content: Text("Are you sure you want to delete this task?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteTask(task);
+              },
+              child: Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _updateTaskInFirestore(Task task) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print("User not logged in!");
+      return;
+    }
+
+    try {
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection("tasks")
+          .doc(user.uid)
+          .collection("userTasks")
+          .where("name", isEqualTo: task.name)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        print("Task not found!");
+        return;
       }
-      _saveTasks();
-    });
+
+      for (var doc in querySnapshot.docs) {
+        await doc.reference.update(task.toMap());
+      }
+
+      print("Task updated successfully!");
+    } catch (e) {
+      print("Error updating task in Firestore: $e");
+    }
+  }
+
+  void _deleteTask(Task task) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print("User not logged in!");
+      return;
+    }
+
+    try {
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection("tasks")
+          .doc(user.uid)
+          .collection("userTasks")
+          .where("name", isEqualTo: task.name)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        print("Task not found!");
+        return;
+      }
+
+      for (var doc in querySnapshot.docs) {
+        await doc.reference.update({'deleted': true});
+      }
+
+      setState(() {
+        for (DateTime date = task.startDate;
+            !date.isAfter(task.endDate);
+            date = date.add(Duration(days: 1))) {
+          String key = DateFormat('yyyy-MM-dd').format(date);
+          tasks[key]?.remove(task);
+          if (tasks[key]?.isEmpty ?? false) {
+            tasks.remove(key);
+          }
+        }
+      });
+
+      print("Task marked as deleted successfully!");
+    } catch (e) {
+      print("Error marking task as deleted in Firestore: $e");
+    }
   }
 }

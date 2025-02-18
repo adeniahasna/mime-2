@@ -42,4 +42,9 @@ class AuthController extends NyController {
   User? getCurrentUser() {
     return _auth.currentUser;
   }
+
+  Future<bool> isUserLoggedIn() async {
+    User? user = _auth.currentUser;
+    return user != null;
+  }
 }

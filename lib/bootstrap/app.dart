@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/app/controllers/auth_controller.dart';
+import 'package:flutter_app/resources/pages/bottom_nav_bar_page.dart';
+import 'package:flutter_app/resources/pages/sign_in_page.dart';
 import 'package:nylo_framework/nylo_framework.dart';
 
 /// Main entry point for the application
@@ -32,6 +35,20 @@ class Main extends StatelessWidget {
             child: ValueListenableBuilder(
               valueListenable: ValueNotifier(NyLocalization.instance.locale),
               builder: (context, Locale locale, _) => MaterialApp(
+                home: FutureBuilder<bool>(
+                  future: AuthController().isUserLoggedIn(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else {
+                      if (snapshot.data == true) {
+                        return BottomNavBarPage();
+                      } else {
+                        return SignInPage();
+                      }
+                    }
+                  },
+                ),
                 navigatorKey: navigatorKey,
                 themeMode: themeMode,
                 navigatorObservers: navigatorObservers,

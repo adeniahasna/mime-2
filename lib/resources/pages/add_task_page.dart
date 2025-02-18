@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/config/assets_image.dart';
 import 'package:flutter_app/config/task.dart';
@@ -408,8 +410,17 @@ class _AddTaskPageState extends NyPage<AddTaskPage> {
     }
   }
 
-  void _saveTask() {
+  void _saveTask() async {
     if (_formKey.currentState!.validate()) {
+      User? user =
+          FirebaseAuth.instance.currentUser; // Dapatkan User yang sedang login
+
+      if (user == null) {
+        print("User not logged in!");
+        return;
+      }
+
+      String uid = user.uid; // Ambil UID user
       Task newTask = Task(
         name: _titleController.text,
         description: _descriptionController.text,
@@ -421,11 +432,23 @@ class _AddTaskPageState extends NyPage<AddTaskPage> {
         priority: _priority,
         icon: _selectedIcon,
         group: _group,
+        deleted: false,
       );
 
-      print("Task saved successfully: ${newTask.name}");
+      // Simpan ke Firestore berdasarkan UID user
+      try {
+        await FirebaseFirestore.instance
+            .collection("tasks")
+            .doc(uid)
+            .collection("userTasks")
+            .add(newTask.toMap());
 
-      Navigator.pop(context, newTask);
+        print("Task berhasil disimpan!");
+
+        Navigator.pop(context, newTask);
+      } catch (e) {
+        print("Error menyimpan task: $e");
+      }
     }
   }
 }

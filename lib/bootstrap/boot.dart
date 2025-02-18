@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/config/task_provider.dart';
+import 'package:provider/provider.dart';
 import '/resources/widgets/splash_screen.dart';
 import '/bootstrap/app.dart';
 import '/config/providers.dart';
@@ -32,7 +34,14 @@ class Boot {
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
 
-    runApp(Main(nylo));
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => TaskProvider()),
+        ],
+        child: Main(nylo),
+      ),
+    );
   }
 }
 

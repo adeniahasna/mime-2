@@ -11,6 +11,7 @@ class Task {
   String priority;
   String icon;
   String group;
+  bool deleted;
 
   Task({
     required this.name,
@@ -23,6 +24,7 @@ class Task {
     this.priority = "Low",
     this.group = "Personal",
     this.icon = "Personal",
+    this.deleted = false,
   });
 
   // Convert TimeOfDay to String for storage
@@ -45,6 +47,7 @@ class Task {
       'group': group,
       'icon': icon,
       'status': status,
+      'deleted': deleted,
     };
   }
 
@@ -61,6 +64,7 @@ class Task {
       priority: map['priority'] ?? "Low",
       group: map['group'] ?? "Personal",
       icon: map['icon'] ?? "Personal",
+      deleted: map['deleted'] ?? false,
     );
   }
 
