@@ -15,15 +15,20 @@ class DashboardPage extends NyStatefulWidget {
 
 class _DashboardPageState extends NyPage<DashboardPage> {
   DateTime today = DateTime.now();
+  DateTime upcoming = DateTime.now().add(Duration(days: 1));
   Map<String, List<Task>> tasks = {};
   late String todayKey;
   late List<Task> todayTasks;
+  late String upcomingKey;
+  late List<Task> upcomingTasks;
 
   @override
   void initState() {
     super.initState();
     todayKey = DateFormat('yyyy-MM-dd').format(today);
+    upcomingKey = DateFormat('yyyy-MM-dd').format(upcoming);
     todayTasks = tasks[todayKey] ?? [];
+    upcomingTasks = tasks[upcomingKey] ?? [];
     _loadTasks();
   }
 
@@ -114,6 +119,19 @@ class _DashboardPageState extends NyPage<DashboardPage> {
                         height: MediaQuery.of(context).size.height * 0.2,
                         child: buildTodayList(),
                       ),
+                      SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment(-0.8, 0),
+                        child: Text(
+                          "Upcoming Task",
+                          style: GoogleFonts.anekDevanagari(
+                              fontSize: 22, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.2,
+                        child: buildUpcomingList(),
+                      ),
                     ],
                   ),
                 ],
@@ -184,35 +202,57 @@ class _DashboardPageState extends NyPage<DashboardPage> {
     List<Task> taskList = todayTasks;
 
     if (taskList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.event_note, size: 50, color: Colors.grey),
-            SizedBox(height: 10),
-            Text("No tasks for this day",
-                style: GoogleFonts.anekDevanagari(
-                  fontSize: 16,
-                  color: Colors.grey,
-                )),
-          ],
+      double gridSize = 180;
+      return Align(
+        alignment: Alignment(-0.8, 0),
+        child: Container(
+          width: gridSize + 20,
+          margin: EdgeInsets.only(right: 12),
+          child: Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.dnd_forwardslash_rounded,
+                    color: Color(0XFF4413D2),
+                    size: 35,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "You don't have task to do today.",
+                    textAlign: TextAlign.left,
+                    style: GoogleFonts.anekDevanagari(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     }
 
-    // Calculate the grid item size to make it a square
-    double gridSize = 180; // Size for each square task card
+    double gridSize = 180;
 
     return Container(
       padding: EdgeInsets.all(16),
-      height: 220, // Height that accommodates the grid size plus padding
+      height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: taskList.length,
         itemBuilder: (context, index) {
           Task task = taskList[index];
-          print(
-              'Task: ${task.name}, Priority: ${task.priority}'); // Debug print
+          print('Task: ${task.name}, Priority: ${task.priority}');
           return Container(
             width: gridSize,
             height: gridSize,
@@ -279,7 +319,137 @@ class _DashboardPageState extends NyPage<DashboardPage> {
                         ),
                       ],
                     ),
-                    Spacer(),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget buildUpcomingList() {
+    List<Task> taskList = upcomingTasks;
+
+    if (taskList.isEmpty) {
+      double gridSize = 180;
+      return Align(
+        alignment: Alignment(-0.8, 0),
+        child: Container(
+          width: gridSize + 20,
+          margin: EdgeInsets.only(right: 12),
+          child: Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.dnd_forwardslash_rounded,
+                    color: Color(0XFF4413D2),
+                    size: 35,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "You don't have task to do tomorrow.",
+                    textAlign: TextAlign.left,
+                    style: GoogleFonts.anekDevanagari(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    double gridSize = 180;
+
+    return Container(
+      padding: EdgeInsets.all(16),
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: taskList.length,
+        itemBuilder: (context, index) {
+          Task task = taskList[index];
+          print('Task: ${task.name}, Priority: ${task.priority}');
+          return Container(
+            width: gridSize,
+            height: gridSize,
+            margin: EdgeInsets.only(right: 12),
+            child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.name,
+                      style: GoogleFonts.anekDevanagari(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "${task.startTime.format(context)} - ${task.endTime.format(context)}",
+                      style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                    ),
+                    SizedBox(height: 8),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(task.status).withAlpha(30),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            task.status,
+                            style: TextStyle(
+                              color: _getStatusColor(task.status),
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color:
+                                _getPriorityColor(task.priority).withAlpha(30),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            task.priority,
+                            style: TextStyle(
+                              color: _getPriorityColor(task.priority),
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

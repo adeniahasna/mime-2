@@ -436,12 +436,18 @@ class _TaskListPageState extends NyPage<TaskListPage> {
               onSelected: (String value) {
                 if (value == 'change_status') {
                   _showChangeStatusDialog(task);
+                } else if (value == 'delete_task') {
+                  _deleteTask(task);
                 }
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
                   value: 'change_status',
                   child: Text('Change Status'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'delete_task',
+                  child: Text('Delete Task'),
                 ),
               ],
             ),
@@ -527,5 +533,20 @@ class _TaskListPageState extends NyPage<TaskListPage> {
         );
       },
     );
+  }
+
+  void _deleteTask(Task task) {
+    setState(() {
+      for (DateTime date = task.startDate;
+          !date.isAfter(task.endDate);
+          date = date.add(Duration(days: 1))) {
+        String key = DateFormat('yyyy-MM-dd').format(date);
+        tasks[key]?.remove(task);
+        if (tasks[key]?.isEmpty ?? false) {
+          tasks.remove(key);
+        }
+      }
+      _saveTasks();
+    });
   }
 }
