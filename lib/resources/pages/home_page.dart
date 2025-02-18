@@ -1,5 +1,4 @@
 import '/resources/widgets/theme_toggle_widget.dart';
-import '/app/networking/api_service.dart';
 import '/bootstrap/extensions.dart';
 import '/resources/widgets/logo_widget.dart';
 import '/resources/widgets/safearea_widget.dart';
@@ -52,7 +51,10 @@ class _HomePageState extends NyPage<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Logo(),
+          Logo(
+            height: 100,
+            width: 100,
+          ),
           Text(
             getEnv("APP_NAME"),
           ).displayMedium(color: context.color.content),

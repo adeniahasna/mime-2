@@ -27,7 +27,10 @@ final TextStyle appFont = GoogleFonts.outfit();
 | Use the Logo() widget or Nylo.getAppLogo() display your logo
 | -------------------------------------------------------------------------- */
 
-final Widget logo = const Logo();
+final Widget logo = const Logo(
+  height: 100,
+  width: 100,
+);
 // File: resources/widgets/logo_widget.dart
 
 /* Loader

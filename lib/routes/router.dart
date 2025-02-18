@@ -1,3 +1,11 @@
+import '/resources/pages/add_task_page.dart';
+import '/resources/pages/edit_task_page.dart';
+import '../resources/pages/sign_in_page.dart';
+import '../resources/pages/sign_up_page.dart';
+import '../resources/pages/task_list_page.dart';
+import '/resources/pages/profile_page.dart';
+import '/resources/pages/bottom_nav_bar_page.dart';
+import '/resources/pages/dashboard_page.dart';
 import '/resources/pages/not_found_page.dart';
 import '/resources/pages/home_page.dart';
 import 'package:nylo_framework/nylo_framework.dart';
@@ -20,7 +28,7 @@ import 'package:nylo_framework/nylo_framework.dart';
 |-------------------------------------------------------------------------- */
 
 appRouter() => nyRoutes((router) {
-      router.add(HomePage.path).initialRoute();
+      router.add(HomePage.path);
       // Add your routes here ...
 
       // router.add(NewPage.path, transition: PageTransitionType.fade);
@@ -33,4 +41,12 @@ appRouter() => nyRoutes((router) {
       //
       // });
       router.add(NotFoundPage.path).unknownRoute();
+      router.add(DashboardPage.path);
+      router.add(BottomNavBarPage.path);
+      router.add(ProfilePage.path);
+      router.add(SignInPage.path).initialRoute();
+      router.add(SignUpPage.path);
+      router.add(TaskListPage.path);
+      router.add(EditTaskPage.path);
+      router.add(AddTaskPage.path);
     });

@@ -17,6 +17,8 @@ class Boot {
 
     if (getEnv('SHOW_SPLASH_SCREEN', defaultValue: false)) {
       runApp(SplashScreen.app());
+
+      await Future.delayed(Duration(seconds: 3));
     }
 
     await _setup();
@@ -26,6 +28,7 @@ class Boot {
   /// This method is called after Nylo is initialized.
   static Future<void> finished(Nylo nylo) async {
     await bootFinished(nylo, providers);
+    WidgetsFlutterBinding.ensureInitialized();
 
     runApp(Main(nylo));
   }
