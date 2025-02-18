@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/app/controllers/auth_controller.dart';
+import 'package:flutter_app/resources/pages/sign_in_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nylo_framework/nylo_framework.dart';
 
@@ -6,6 +8,7 @@ class SignUpButton extends StatefulWidget {
   final TextEditingController controllerName;
   final TextEditingController controllerEmail;
   final TextEditingController controllerPassword;
+
   const SignUpButton(
       {super.key,
       required this.controllerName,
@@ -17,6 +20,7 @@ class SignUpButton extends StatefulWidget {
 }
 
 class _SignUpButtonState extends NyState<SignUpButton> {
+  final AuthController _authController = AuthController();
   bool isValid = false;
   String? nameError;
   String? emailError;
@@ -29,6 +33,27 @@ class _SignUpButtonState extends NyState<SignUpButton> {
     widget.controllerName.addListener(updateButtonState);
     widget.controllerEmail.addListener(updateButtonState);
     widget.controllerPassword.addListener(updateButtonState);
+  }
+
+  Future<void> _register() async {
+    String name = widget.controllerName.text;
+    String email = widget.controllerEmail.text;
+    String password = widget.controllerPassword.text;
+
+    // Panggil metode register dari AuthController
+    String? errorMessage =
+        await _authController.register(name, email, password);
+
+    if (errorMessage == null) {
+      showToastNotification(context,
+          title: "Registrasi Berhasil!", description: "Silakan login.");
+      Navigator.pushNamed(
+        context,
+        SignInPage.path.name,
+      );
+    } else {
+      showToastNotification(context, title: "Error", description: errorMessage);
+    }
   }
 
   @override
@@ -72,6 +97,7 @@ class _SignUpButtonState extends NyState<SignUpButton> {
                 });
                 NyLogger.info("Sign up button pressed!");
                 print("Name: $name, Email: $email, Password: $password");
+                _register();
               },
               onFailure: (Exception exception) {
                 setState(() {

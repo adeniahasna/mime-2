@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import '/resources/widgets/splash_screen.dart';
 import '/bootstrap/app.dart';
@@ -29,6 +30,7 @@ class Boot {
   static Future<void> finished(Nylo nylo) async {
     await bootFinished(nylo, providers);
     WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp();
 
     runApp(Main(nylo));
   }

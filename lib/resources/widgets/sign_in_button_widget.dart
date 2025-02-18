@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/app/controllers/auth_controller.dart';
 import 'package:flutter_app/resources/pages/bottom_nav_bar_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nylo_framework/nylo_framework.dart';
@@ -17,6 +18,7 @@ class SignInButton extends StatefulWidget {
 }
 
 class _SignInButtonState extends NyState<SignInButton> {
+  final AuthController _authController = AuthController();
   bool isValid = false;
 
   @override
@@ -42,13 +44,27 @@ class _SignInButtonState extends NyState<SignInButton> {
     });
   }
 
+  void _login() async {
+    String? errorMessage = await _authController.login(
+      widget.controllerEmail.text,
+      widget.controllerPassword.text,
+    );
+
+    if (errorMessage == null) {
+      showToastNotification(context,
+          title: "Login Berhasil", description: "Selamat datang!");
+      Navigator.pushReplacementNamed(context, BottomNavBarPage.path.name);
+    } else {
+      showToastNotification(context, title: "Error", description: errorMessage);
+    }
+  }
+
   @override
   Widget view(BuildContext context) {
     return MaterialButton(
       onPressed: () {
         if (isValid) {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => BottomNavBarPage()));
+          _login();
           NyLogger.info("Sign In");
         }
       },
