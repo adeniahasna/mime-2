@@ -23,11 +23,10 @@ class Task {
     this.status = "Open",
     this.priority = "Low",
     this.group = "Personal",
-    this.icon = "Personal",
+    this.icon = "personal",
     this.deleted = false,
   });
 
-  // Convert TimeOfDay to String for storage
   String _timeOfDayToString(TimeOfDay timeOfDay) {
     final String hour = timeOfDay.hour.toString().padLeft(2, '0');
     final String minute = timeOfDay.minute.toString().padLeft(2, '0');
@@ -43,40 +42,38 @@ class Task {
       'startTime': _timeOfDayToString(startTime),
       'endDate': endDate.toIso8601String(),
       'endTime': _timeOfDayToString(endTime),
-      'priority': priority,
-      'group': group,
-      'icon': icon,
       'status': status,
+      'priority': priority,
+      'icon': icon,
+      'group': group,
       'deleted': deleted,
     };
   }
 
-  // Create task from map for retrieval
   static Task fromMap(Map<String, dynamic> map) {
     return Task(
       name: map['name'],
       description: map['description'] ?? "",
       startDate: DateTime.parse(map['startDate']),
-      startTime: Task._stringToTimeOfDay(map['startTime']),
+      startTime: _stringToTimeOfDay(map['startTime']),
       endDate: DateTime.parse(map['endDate']),
-      endTime: Task._stringToTimeOfDay(map['endTime']),
+      endTime: _stringToTimeOfDay(map['endTime']),
       status: map['status'] ?? "Open",
       priority: map['priority'] ?? "Low",
+      icon: map['icon'] ?? "personal",
       group: map['group'] ?? "Personal",
-      icon: map['icon'] ?? "Personal",
       deleted: map['deleted'] ?? false,
     );
   }
 
-  // Convert string to TimeOfDay for retrieval
   static TimeOfDay _stringToTimeOfDay(String? timeString) {
     if (timeString == null || !timeString.contains(':')) {
-      return const TimeOfDay(hour: 0, minute: 0); // Default value
+      return TimeOfDay(hour: 0, minute: 0);
     }
     List<String> parts = timeString.split(':');
     return TimeOfDay(
-      hour: int.tryParse(parts[0]) ?? 0,
-      minute: int.tryParse(parts[1]) ?? 0,
+      hour: int.parse(parts[0]),
+      minute: int.parse(parts[1]),
     );
   }
 }

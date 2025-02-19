@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -74,14 +76,6 @@ class _DashboardPageState extends NyPage<DashboardPage> {
           task.endTime.minute,
         );
 
-        DateTime taskStartDateTime = DateTime(
-          task.startDate.year,
-          task.startDate.month,
-          task.startDate.day,
-          task.startTime.hour,
-          task.startTime.minute,
-        );
-
         String taskDate = DateFormat('yyyy-MM-dd').format(task.startDate);
         if (taskDate == todayKey && !taskEndDateTime.isBefore(now)) {
           todayTasksList.add(task);
@@ -115,10 +109,23 @@ class _DashboardPageState extends NyPage<DashboardPage> {
   Widget view(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 60,
         automaticallyImplyLeading: false,
+        elevation: 0,
+        backgroundColor: Colors.white.withAlpha(80),
+        flexibleSpace: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(50),
+              ),
+            ),
+          ),
+        ),
         title: Column(
           children: [
-            SizedBox(height: 30),
+            SizedBox(height: 10),
             Stack(
               children: [
                 Center(
@@ -207,6 +214,7 @@ class _DashboardPageState extends NyPage<DashboardPage> {
                         height: MediaQuery.of(context).size.height * 0.2,
                         child: buildDelayedList(),
                       ),
+                      SizedBox(height: 40)
                     ],
                   ),
                 ],
@@ -293,10 +301,10 @@ class _DashboardPageState extends NyPage<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.dnd_forwardslash_rounded,
-                    color: Color(0XFF4413D2),
-                    size: 30,
+                  Image.asset(
+                    AssetImages.downsmile,
+                    height: 35,
+                    width: 35,
                   ),
                   SizedBox(height: 20),
                   Text(
@@ -424,10 +432,10 @@ class _DashboardPageState extends NyPage<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.dnd_forwardslash_rounded,
-                    color: Color(0XFF4413D2),
-                    size: 30,
+                  Image.asset(
+                    AssetImages.downsmile,
+                    height: 35,
+                    width: 35,
                   ),
                   SizedBox(height: 20),
                   Text(
@@ -555,10 +563,10 @@ class _DashboardPageState extends NyPage<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.dnd_forwardslash_rounded,
-                    color: Color(0XFF4413D2),
-                    size: 30,
+                  Image.asset(
+                    AssetImages.downsmile,
+                    height: 35,
+                    width: 35,
                   ),
                   SizedBox(height: 20),
                   Text(

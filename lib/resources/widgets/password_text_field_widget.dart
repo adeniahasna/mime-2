@@ -31,14 +31,18 @@ class _PasswordTextFieldState extends NyState<PasswordTextField> {
         }
       });
     });
+
+    widget.controller.addListener(() {
+      validatePass();
+    });
   }
 
   void validatePass() {
     String value = widget.controller.text;
-    if (value.isEmpty) {
+    if (value.length < 8) {
       setState(() {
         hasError = true;
-        errorMessage = 'Password is required';
+        errorMessage = 'Password must be at least 8 characters';
       });
     } else {
       setState(() {
@@ -87,8 +91,10 @@ class _PasswordTextFieldState extends NyState<PasswordTextField> {
             fontSize: 14,
             color: hasError ? Color(0xFFB20D0D) : Color(0xFF6D6D6D),
           ),
-          validationRules: "not_empty",
-          decoration: InputDecoration(),
+          validationRules: "not_empty|min:8",
+          onChanged: (value) {
+            validatePass();
+          },
         ),
         if (hasError && errorMessage != null)
           Padding(

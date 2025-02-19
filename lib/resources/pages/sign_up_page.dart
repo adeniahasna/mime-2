@@ -4,6 +4,7 @@ import 'package:flutter_app/resources/pages/sign_in_page.dart';
 import 'package:flutter_app/resources/widgets/email_text_field_widget.dart';
 import 'package:flutter_app/resources/widgets/logo_widget.dart';
 import 'package:flutter_app/resources/widgets/name_text_field_widget.dart';
+import 'package:flutter_app/resources/widgets/password_confirmation_field.dart';
 import 'package:flutter_app/resources/widgets/password_field_with_hints_widget.dart';
 import 'package:flutter_app/resources/widgets/sign_up_button_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,15 +20,18 @@ class _SignUpPageState extends NyPage<SignUpPage> {
   TextEditingController controllerName = TextEditingController();
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerPassword = TextEditingController();
+  TextEditingController controllerConfirmPassword = TextEditingController();
   late FocusNode _nameFocusNode = FocusNode();
   late FocusNode _emailFocusNode = FocusNode();
   late FocusNode _passFocusNode = FocusNode();
+  late FocusNode _confirmPassFocusNode = FocusNode();
   bool isEmailFocused = false;
   bool isPassFocused = false;
   bool isNameFocused = false;
   bool hasUpperCase = false;
   bool hasDigit = false;
   bool hasValidLength = false;
+  bool passwordsMatch = false;
 
   void setupFocusListener() {
     _nameFocusNode.addListener(() {
@@ -53,6 +57,14 @@ class _SignUpPageState extends NyPage<SignUpPage> {
         });
       }
     });
+
+    _confirmPassFocusNode.addListener(() {
+      if (mounted) {
+        updateState(() {
+          isPassFocused = _confirmPassFocusNode.hasFocus;
+        });
+      }
+    });
   }
 
   void updatePasswordValidation(bool upper, bool digit, bool minLength) {
@@ -66,12 +78,22 @@ class _SignUpPageState extends NyPage<SignUpPage> {
     });
   }
 
+  void updatePasswordMatch(bool isMatch) {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        passwordsMatch = isMatch;
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _nameFocusNode = FocusNode();
     _emailFocusNode = FocusNode();
     _passFocusNode = FocusNode();
+    _confirmPassFocusNode = FocusNode();
   }
 
   @override
@@ -79,6 +101,7 @@ class _SignUpPageState extends NyPage<SignUpPage> {
     _nameFocusNode.dispose();
     _emailFocusNode.dispose();
     _passFocusNode.dispose();
+    _confirmPassFocusNode.dispose();
     super.dispose();
   }
 
@@ -91,7 +114,7 @@ class _SignUpPageState extends NyPage<SignUpPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            height: MediaQuery.of(context).size.height,
+            height: 1000,
             child: Stack(
               children: [
                 authBG(),
@@ -159,27 +182,36 @@ class _SignUpPageState extends NyPage<SignUpPage> {
           ),
           width: 360,
           padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              textTitle(),
-              SizedBox(height: 20),
-              NameTextField(controller: controllerName),
-              SizedBox(height: 22),
-              EmailTextField(controller: controllerEmail),
-              SizedBox(height: 22),
-              PasswordFieldWithHints(
-                  controller: controllerPassword,
-                  onValidateChange: updatePasswordValidation),
-              SizedBox(height: 10),
-              validateText(),
-              SizedBox(height: 13),
-              SignUpButton(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                textTitle(),
+                SizedBox(height: 20),
+                NameTextField(controller: controllerName),
+                SizedBox(height: 22),
+                EmailTextField(controller: controllerEmail),
+                SizedBox(height: 22),
+                PasswordFieldWithHints(
+                    controller: controllerPassword,
+                    onValidateChange: updatePasswordValidation),
+                SizedBox(height: 22),
+                PasswordConfirmationField(
+                    passwordController: controllerPassword,
+                    confirmPasswordController: controllerConfirmPassword,
+                    onValidateChange: updatePasswordMatch),
+                SizedBox(height: 10),
+                validateText(),
+                SizedBox(height: 13),
+                SignUpButton(
                   controllerName: controllerName,
                   controllerEmail: controllerEmail,
-                  controllerPassword: controllerPassword),
-              SizedBox(height: 2),
-              haveAccount()
-            ],
+                  controllerPassword: controllerPassword,
+                  controllerConfirmPassword: controllerConfirmPassword,
+                ),
+                SizedBox(height: 2),
+                haveAccount()
+              ],
+            ),
           ),
         ),
       ),
@@ -215,6 +247,14 @@ class _SignUpPageState extends NyPage<SignUpPage> {
               style: GoogleFonts.anekDevanagari(
                 fontSize: 13,
                 color: hasUpperCase ? Color(0xFF4413D2) : Color(0xFFD1C8FF),
+              ),
+            ),
+            SizedBox(height: 3),
+            Text(
+              "* Passwords must match",
+              style: GoogleFonts.anekDevanagari(
+                fontSize: 13,
+                color: passwordsMatch ? Color(0xFF4413D2) : Color(0xFFD1C8FF),
               ),
             ),
           ],

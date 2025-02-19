@@ -21,4 +21,5 @@ class AssetImages {
   static const String work = "public/images/icons/work_group.png";
   static const String study = "public/images/icons/study_group.png";
   static const String exercise = "public/images/icons/gym_group.png";
+  static const String downsmile = "public/images/icons/downsmile_icon.png";
 }

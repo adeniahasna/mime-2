@@ -8,12 +8,15 @@ class SignUpButton extends StatefulWidget {
   final TextEditingController controllerName;
   final TextEditingController controllerEmail;
   final TextEditingController controllerPassword;
+  final TextEditingController controllerConfirmPassword;
 
-  const SignUpButton(
-      {super.key,
-      required this.controllerName,
-      required this.controllerEmail,
-      required this.controllerPassword});
+  const SignUpButton({
+    super.key,
+    required this.controllerName,
+    required this.controllerEmail,
+    required this.controllerPassword,
+    required this.controllerConfirmPassword,
+  });
 
   @override
   createState() => _SignUpButtonState();
@@ -25,6 +28,7 @@ class _SignUpButtonState extends NyState<SignUpButton> {
   String? nameError;
   String? emailError;
   String? passwordError;
+  String? confirmPasswordError;
 
   @override
   void initState() {
@@ -33,6 +37,7 @@ class _SignUpButtonState extends NyState<SignUpButton> {
     widget.controllerName.addListener(updateButtonState);
     widget.controllerEmail.addListener(updateButtonState);
     widget.controllerPassword.addListener(updateButtonState);
+    widget.controllerConfirmPassword.addListener(updateButtonState);
   }
 
   Future<void> _register() async {
@@ -61,6 +66,7 @@ class _SignUpButtonState extends NyState<SignUpButton> {
     widget.controllerName.removeListener(updateButtonState);
     widget.controllerEmail.removeListener(updateButtonState);
     widget.controllerPassword.removeListener(updateButtonState);
+    widget.controllerConfirmPassword.removeListener(updateButtonState);
 
     super.dispose();
   }
@@ -69,7 +75,8 @@ class _SignUpButtonState extends NyState<SignUpButton> {
     setState(() {
       isValid = widget.controllerName.text.isNotEmpty &&
           widget.controllerPassword.text.isNotEmpty &&
-          widget.controllerEmail.text.isNotEmpty;
+          widget.controllerEmail.text.isNotEmpty &&
+          widget.controllerConfirmPassword.text.isNotEmpty;
     });
   }
 
@@ -82,21 +89,33 @@ class _SignUpButtonState extends NyState<SignUpButton> {
             String name = widget.controllerName.text;
             String email = widget.controllerEmail.text;
             String password = widget.controllerPassword.text;
-
+            String confirmPassword = widget.controllerConfirmPassword.text;
+            if (widget.controllerPassword.text !=
+                widget.controllerConfirmPassword.text) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Passwords do not match"),
+                ),
+              );
+              return;
+            }
             validate(
               rules: {
                 "name": [name, "not_empty"],
                 "email": [email, "not_empty|email"],
-                "password": [password, "not_empty|min:8|password_v1"]
+                "password": [password, "not_empty|min:8|password_v1"],
+                "confirmPassword": [confirmPassword, "not_empty|min:8"]
               },
               onSuccess: () {
                 setState(() {
                   nameError = null;
                   emailError = null;
                   passwordError = null;
+                  confirmPasswordError = null;
                 });
                 NyLogger.info("Sign up button pressed!");
-                print("Name: $name, Email: $email, Password: $password");
+                print(
+                    "Name: $name, Email: $email, Password: $password, confirmPassword: $confirmPassword");
                 _register();
               },
               onFailure: (Exception exception) {

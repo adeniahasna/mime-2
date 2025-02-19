@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/config/assets_image.dart';
 import 'package:flutter_app/config/task.dart';
+import 'package:flutter_app/resources/pages/edit_task_page.dart';
 import 'package:flutter_app/resources/pages/profile_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nylo_framework/nylo_framework.dart';
@@ -18,9 +19,14 @@ class _TaskListPageState extends NyPage<TaskListPage> {
   ScrollController scrollController = ScrollController();
   DateTime selectedDate = DateTime.now();
   DateTime currentMonth = DateTime.now();
+  bool sortAscending = true;
   Map<String, List<Task>> tasks = {};
   String selectedStatus = "All";
   final List<String> statuses = ["All", "Open", "In Progress", "Done"];
+  int comparePriority(String a, String b) {
+    const priorityOrder = {'High': 3, 'Medium': 2, 'Low': 1};
+    return priorityOrder[a]! - priorityOrder[b]!;
+  }
 
   @override
   void initState() {
@@ -170,10 +176,21 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    "Task List",
-                    style: GoogleFonts.anekDevanagari(
-                        fontSize: 22, fontWeight: FontWeight.w600),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Task List",
+                        style: GoogleFonts.anekDevanagari(
+                            fontSize: 22, fontWeight: FontWeight.w600),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.sort),
+                        onPressed: () {
+                          _toggleSortOrder();
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -186,6 +203,12 @@ class _TaskListPageState extends NyPage<TaskListPage> {
         ],
       ),
     );
+  }
+
+  void _toggleSortOrder() {
+    setState(() {
+      sortAscending = !sortAscending;
+    });
   }
 
   Widget buildMonthSelector() {
@@ -333,6 +356,8 @@ class _TaskListPageState extends NyPage<TaskListPage> {
     );
   }
 
+  @override
+  // ignore: override_on_non_overriding_member
   Widget _buildTaskList() {
     if (selectedDate.month != currentMonth.month ||
         selectedDate.year != currentMonth.year) {
@@ -342,11 +367,15 @@ class _TaskListPageState extends NyPage<TaskListPage> {
     String key = DateFormat('yyyy-MM-dd').format(selectedDate);
     List<Task> taskList = tasks[key] ?? [];
 
-    // Filter by status if needed
     if (selectedStatus != "All") {
       taskList =
           taskList.where((task) => task.status == selectedStatus).toList();
     }
+
+    taskList.sort((a, b) {
+      int comparison = comparePriority(a.priority, b.priority);
+      return sortAscending ? comparison : -comparison;
+    });
 
     if (taskList.isEmpty) {
       return Center(
@@ -370,7 +399,6 @@ class _TaskListPageState extends NyPage<TaskListPage> {
       padding: EdgeInsets.all(16),
       itemBuilder: (context, index) {
         Task task = taskList[index];
-        print('Task: ${task.name}, Priority: ${task.priority}'); // Debug print
         return Card(
           elevation: 2,
           margin: EdgeInsets.only(bottom: 12),
@@ -393,36 +421,42 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                   "${task.startTime.format(context)} - ${task.endTime.format(context)}",
                   style: TextStyle(color: Colors.grey[700]),
                 ),
-                SizedBox(height: 2),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(task.status).withAlpha(50),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    task.status,
-                    style: TextStyle(
-                      color: _getStatusColor(task.status),
-                      fontSize: 12,
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(task.status).withAlpha(50),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        task.status,
+                        style: TextStyle(
+                          color: _getStatusColor(task.status),
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                SizedBox(height: 2),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: _getPriorityColor(task.priority).withAlpha(50),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    task.priority,
-                    style: TextStyle(
-                      color: _getPriorityColor(task.priority),
-                      fontSize: 12,
+                    SizedBox(width: 10),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _getPriorityColor(task.priority).withAlpha(50),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        task.priority,
+                        style: TextStyle(
+                          color: _getPriorityColor(task.priority),
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+                SizedBox(height: 10),
               ],
             ),
             trailing: PopupMenuButton<String>(
@@ -431,6 +465,20 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                   _showChangeStatusDialog(task);
                 } else if (value == 'delete_task') {
                   _showDeleteConfirmDialog(task);
+                } else if (value == 'edit_task') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditTaskPage(task: task),
+                    ),
+                  ).then((updatedTask) {
+                    if (updatedTask != null) {
+                      setState(() {
+                        // Update the task list with the updated task
+                        _loadTasks();
+                      });
+                    }
+                  });
                 }
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -441,6 +489,10 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                 PopupMenuItem<String>(
                   value: 'delete_task',
                   child: Text('Delete Task'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'edit_task',
+                  child: Text('Edit Task'),
                 ),
               ],
             ),
@@ -455,12 +507,16 @@ class _TaskListPageState extends NyPage<TaskListPage> {
                       children: [
                         Text(
                           "Description:",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                          style: GoogleFonts.anekDevanagari(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Text(task.description),
+                        SizedBox(height: 10),
+                        Text(
+                          task.description,
+                          style: GoogleFonts.anekDevanagari(fontSize: 15),
+                        ),
                       ],
                     ),
                   ),

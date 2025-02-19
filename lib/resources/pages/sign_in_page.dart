@@ -136,22 +136,7 @@ class _SignInPageState extends NyPage<SignInPage> {
               EmailTextField(controller: controllerEmail),
               SizedBox(height: 22),
               PasswordTextField(controller: controllerPassword),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Forget Password ?",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.indigo[600],
-                      fontWeight: FontWeight.bold,
-                      fontFamily: GoogleFonts.anekDevanagari().fontFamily,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
+              SizedBox(height: 40),
               SignInButton(
                   controllerEmail: controllerEmail,
                   controllerPassword: controllerPassword),
